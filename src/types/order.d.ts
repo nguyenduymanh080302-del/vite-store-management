@@ -53,7 +53,7 @@ type Order = {
 }
 
 type OrderProductPayload = {
-    warehouseId: number
+    warehouseId?: number | null
     productId: number
     unitId: number
     quantity: number
