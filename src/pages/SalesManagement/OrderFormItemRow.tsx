@@ -21,11 +21,22 @@ interface OrderFormItemRowProps {
     handleUnitChange: (index: number, unitId?: number) => void
 }
 
+/**
+ * Formats a numeric amount for the current locale.
+ * @param value The number to format.
+ * @param locale The active locale string used to pick the correct number format.
+ * @returns A locale-formatted money string.
+ */
 const formatAmount = (value?: number, locale?: string) =>
     new Intl.NumberFormat(locale === 'vi' ? 'vi-VN' : 'en-US', {
         maximumFractionDigits: 2,
     }).format(value || 0)
 
+/**
+ * Renders one editable order line item with product, unit, warehouse, and price fields.
+ * @param props The row props containing the current form instance, row metadata, and callback handlers.
+ * @returns A table row-like form block for a single order item.
+ */
 export const OrderFormItemRow = ({
     field,
     form,

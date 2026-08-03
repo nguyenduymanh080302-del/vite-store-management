@@ -1,10 +1,11 @@
-import { Button, Flex, Input, Modal, Select, Spin, Table, Tag, Typography } from 'antd'
+import { Button, Flex, Input, Modal, Select, Table, Tag, Typography } from 'antd'
 import type { ColumnType } from 'antd/es/table'
 import { IconPlus, IconTrash } from '@/assets/icons'
 import FormattedMessage from '@/components/FormattedMessage'
 import dayjs from 'dayjs'
 import { useDeleteOrderMutation, useOrderListQuery } from '@/hooks/useOrder'
-import { useState } from 'react'
+import { useDebounce } from '@/hooks/useDebounce'
+import { useMemo, useState } from 'react'
 import { useIntl } from 'react-intl'
 import { useAppStore } from '@/stores/app.store'
 import { DATE_FORMAT_BY_LOCALE } from '@/utils/constant'
@@ -18,11 +19,21 @@ const statusColorMap: Record<ORDER_STATUS, string> = {
     [ORDER_STATUS.DONE]: 'green',
 }
 
+/**
+ * Formats a numeric order amount for display using the active locale.
+ * @param value The numeric amount to format.
+ * @param locale The current locale string used by the UI.
+ * @returns A locale-formatted monetary string.
+ */
 const formatAmount = (value?: number, locale?: string) =>
     new Intl.NumberFormat(locale === 'vi' ? 'vi-VN' : 'en-US', {
         maximumFractionDigits: 2,
     }).format(value || 0)
 
+/**
+ * Displays the sales order list page, filter controls, and create/edit/delete order modals.
+ * @returns The sales management table screen.
+ */
 const SalesManagement = () => {
     const locale = useAppStore((state) => state.locale)
     const intl = useIntl()
@@ -33,14 +44,23 @@ const SalesManagement = () => {
         page: 1,
         limit: 10,
     })
+    const [searchValue, setSearchValue] = useState('')
     const [open, setOpen] = useState(false)
     const [mode, setMode] = useState<ModalActionMode>('create')
     const [selectedOrder, setSelectedOrder] = useState<Order | null>(null)
+    const debouncedSearchValue = useDebounce(searchValue, 400)
 
-    const { data, isLoading } = useOrderListQuery(filters)
+    const queryFilters = useMemo(
+        () => ({
+            ...filters,
+            page: 1,
+            search: debouncedSearchValue.trim() || undefined,
+        }),
+        [debouncedSearchValue, filters]
+    )
+
+    const { data, isLoading } = useOrderListQuery(queryFilters)
     const { mutateAsync: deleteOrder, isPending: isDeleting } = useDeleteOrderMutation()
-
-    if (isLoading) return <Spin fullscreen />
 
     const orderData = data?.data
     const orderList = orderData?.items || []
@@ -50,18 +70,29 @@ const SalesManagement = () => {
         value: status,
     }))
 
+    /**
+     * Opens the modal in create, edit, or delete mode and stores the selected order context.
+     * @param nextMode The modal action mode to activate.
+     * @param order Optional order record used when editing or deleting.
+     */
     const handleChangeMode = (nextMode: ModalActionMode, order?: Order) => {
         setMode(nextMode)
         setSelectedOrder(order || null)
         setOpen(true)
     }
 
+    /**
+     * Closes the active modal and resets the selected order state back to its default values.
+     */
     const handleClose = () => {
         setSelectedOrder(null)
         setMode('create')
         setOpen(false)
     }
 
+    /**
+     * Deletes the selected order after confirmation and then closes the modal.
+     */
     const handleSubmitDelete = async () => {
         if (!selectedOrder) return
         try {
@@ -101,6 +132,16 @@ const SalesManagement = () => {
             render: (value: number) => formatAmount(value, locale),
         },
         {
+            title: <FormattedMessage id="table.column.delivery-fee" defaultMessage="Delivery Fee" />,
+            dataIndex: 'deliveryFee',
+            render: (value?: number | null) => formatAmount(value || 0, locale),
+        },
+        {
+            title: <FormattedMessage id="table.column.store-profit" defaultMessage="Store Profit" />,
+            dataIndex: 'profit',
+            render: (value?: number | null) => formatAmount(value || 0, locale),
+        },
+        {
             title: <FormattedMessage id="table.column.created-at" />,
             dataIndex: 'createdAt',
             render: (value: string) =>
@@ -126,19 +167,20 @@ const SalesManagement = () => {
         <Flex vertical gap={12}>
             <Flex justify="space-between" gap={12} wrap>
                 <Flex gap={12} wrap style={{ flex: 1 }}>
-                    <Input.Search
+                    <Input
                         allowClear
+                        value={searchValue}
                         placeholder={intl.formatMessage({
                             id: 'management.sales.filter.search-placeholder',
                             defaultMessage: 'Search by order code, customer, or phone',
                         })}
-                        onSearch={(value) =>
+                        onChange={(e) => {
+                            setSearchValue(e.target.value)
                             setFilters((prev) => ({
                                 ...prev,
                                 page: 1,
-                                search: value ? value.trim() || undefined : undefined,
                             }))
-                        }
+                        }}
                         style={{ width: 320, maxWidth: '100%' }}
                     />
                     <Select
@@ -185,6 +227,7 @@ const SalesManagement = () => {
                             limit: pageSize,
                         })),
                 }}
+                loading={isLoading}
                 showSorterTooltip={false}
             />
 

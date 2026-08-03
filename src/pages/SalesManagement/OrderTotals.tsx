@@ -16,6 +16,11 @@ interface OrderTotalsProps {
     form: FormInstance
 }
 
+/**
+ * Displays the order totals summary and keeps the form's total amount and VAT value in sync.
+ * @param props The component props containing the antd form instance.
+ * @returns A totals row for subtotal, VAT, discount, and paid amount.
+ */
 export const OrderTotals = ({ form }: OrderTotalsProps) => {
     // Watch products value inside this small component so that only this component re-renders during editing
     const watchedProducts = Form.useWatch<OrderLineFormValue[]>('products', form) || []

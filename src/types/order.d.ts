@@ -6,6 +6,7 @@ type OrderProduct = {
     productId: number
     unitId: number
     quantity: number
+    importPrice: number
     sellPrice: number
     extraPrice: number
     vatPercent: number
@@ -39,6 +40,9 @@ type Order = {
     vatValue: number
     discountValue?: number | null
     totalAmount: number
+    deliveryFee?: number | null
+    paidAmount?: number | null
+    profit?: number | null
     status: OrderStatusValue
     creatorId: number
     createdBy: Account
@@ -46,7 +50,6 @@ type Order = {
     delivery?: Delivery | null
     deliveryPerson?: string | null
     deliveryPhone?: string | null
-    paidAmount?: number | null
     products: OrderProduct[]
     createdAt: string
     updatedAt: string
@@ -57,6 +60,7 @@ type OrderProductPayload = {
     productId: number
     unitId: number
     quantity: number
+    importPrice: number
     sellPrice: number
     extraPrice?: number
     vatPercent: number
@@ -74,10 +78,12 @@ type CreateOrderPayload = {
     vatValue: number
     discountValue?: number
     totalAmount: number
+    deliveryFee?: number
     status?: OrderStatusValue
     deliveryId?: number
     deliveryPerson?: string
     deliveryPhone?: string
+    deliveryFee?: number
     paidAmount?: number
     products: OrderProductPayload[]
 }

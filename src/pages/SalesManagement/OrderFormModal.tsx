@@ -1,10 +1,12 @@
-import { Button, Col, Flex, Form, Input, Modal, Row, Select, Spin, Typography } from 'antd'
+import { Button, Col, Flex, Form, Input, Modal, Row, Select, Typography } from 'antd'
 import FormattedMessage from '@/components/FormattedMessage'
 import dayjs from 'dayjs'
 import { useCustomerListQuery } from '@/hooks/useCustomer'
 import { useDeliveryListQuery } from '@/hooks/useDelivery'
 import { useWarehouseListQuery } from '@/hooks/useWarehouse'
 import { useCreateOrderMutation, useUpdateOrderMutation } from '@/hooks/useOrder'
+import { PRODUCT_QUERY_KEY } from '@/hooks/useProduct'
+import { useQueryClient } from '@tanstack/react-query'
 import { useEffect, useState } from 'react'
 import { useIntl } from 'react-intl'
 import { useAppStore } from '@/stores/app.store'
@@ -19,6 +21,7 @@ type OrderLineFormValue = {
     productId?: number | string
     unitId?: number | string
     quantity?: number | string
+    importPrice?: number | string
     sellPrice?: number | string
     extraPrice?: number | string
     vatPercent?: number | string
@@ -39,8 +42,17 @@ type OrderFormValues = Omit<
     products?: OrderLineFormValue[]
 }
 
+/**
+ * Generates a unique order code for the current create-order form.
+ * @returns A formatted order code string.
+ */
 const generateOrderCode = () => `ORD-${dayjs().format('YYYYMMDDHHmmss')}`
 
+/**
+ * Converts the form's raw order input into the backend payload shape.
+ * @param raw The form values collected from the order modal.
+ * @returns A normalized `CreateOrderPayload` object ready for mutation.
+ */
 const normalizeOrderValues = (raw: OrderFormValues): CreateOrderPayload => ({
     orderCode: raw.orderCode,
     customerId: raw.customerId ? Number(raw.customerId) : undefined,
@@ -55,6 +67,7 @@ const normalizeOrderValues = (raw: OrderFormValues): CreateOrderPayload => ({
             ? undefined
             : Number(raw.discountValue),
     totalAmount: Number(raw.totalAmount || 0),
+    deliveryFee: Number(raw.deliveryFee || 0),
     status: raw.status || ORDER_STATUS.PENDING,
     deliveryId: raw.deliveryId ? Number(raw.deliveryId) : undefined,
     deliveryPerson: raw.deliveryPerson || undefined,
@@ -68,6 +81,7 @@ const normalizeOrderValues = (raw: OrderFormValues): CreateOrderPayload => ({
         productId: Number(item.productId),
         unitId: Number(item.unitId),
         quantity: Number(item.quantity),
+        importPrice: Number(item.importPrice || 0),
         sellPrice: Number(item.sellPrice || 0),
         extraPrice:
             item.extraPrice === undefined || item.extraPrice === ''
@@ -84,10 +98,16 @@ interface OrderFormModalProps {
     onClose: () => void
 }
 
+/**
+ * Main modal for creating or editing an order.
+ * @param props The modal control props: visibility, mode, selected order, and close handler.
+ * @returns A React modal UI for the order form.
+ */
 export const OrderFormModal = ({ open, mode, order, onClose }: OrderFormModalProps) => {
     const locale = useAppStore((state) => state.locale)
     const intl = useIntl()
     const t = (id: string, defaultMessage: string) => intl.formatMessage({ id, defaultMessage })
+    const queryClient = useQueryClient()
 
     const [form] = Form.useForm<OrderFormValues>()
 
@@ -112,10 +132,7 @@ export const OrderFormModal = ({ open, mode, order, onClose }: OrderFormModalPro
     const [productSearchOpen, setProductSearchOpen] = useState(false)
     const [currentProductField, setCurrentProductField] = useState<number | null>(null)
 
-    // Keep a cache of selected/edited products so that we can show details even if they are not in the current search query
-    const [productCache, setProductCache] = useState<Record<number, Product>>({})
-
-    // Initialize/Reset form and productCache on mount or modal state change
+    // Initialize/Reset form and hydrate product detail cache on mount or modal state change
     useEffect(() => {
         if (open) {
             if (mode === 'create') {
@@ -128,15 +145,15 @@ export const OrderFormModal = ({ open, mode, order, onClose }: OrderFormModalPro
                     paidAmount: 0,
                     products: [{ quantity: 1, extraPrice: 0, vatPercent: 0 }],
                 })
-                setProductCache({})
             } else if (mode === 'edit' && order) {
-                const cache: Record<number, Product> = {}
                 order.products.forEach((item) => {
                     if (item.productUnit?.product) {
-                        cache[item.productId] = item.productUnit.product
+                        queryClient.setQueryData<ApiResponse<Product>>(
+                            PRODUCT_QUERY_KEY.detail(item.productId),
+                            { data: item.productUnit.product } as ApiResponse<Product>,
+                        )
                     }
                 })
-                setProductCache(cache)
 
                 form.setFieldsValue({
                     orderCode: order.orderCode,
@@ -153,12 +170,14 @@ export const OrderFormModal = ({ open, mode, order, onClose }: OrderFormModalPro
                     deliveryId: order.deliveryId ?? undefined,
                     deliveryPerson: order.deliveryPerson ?? undefined,
                     deliveryPhone: order.deliveryPhone ?? undefined,
+                    deliveryFee: order.deliveryFee ?? 0,
                     paidAmount: order.paidAmount ?? 0,
                     products: order.products.map((item) => ({
                         warehouseId: item.warehouseId ?? undefined,
                         productId: item.productId,
                         unitId: item.unitId,
                         quantity: item.quantity,
+                        importPrice: item.importPrice,
                         sellPrice: item.sellPrice,
                         extraPrice: item.extraPrice,
                         vatPercent: item.vatPercent,
@@ -168,39 +187,68 @@ export const OrderFormModal = ({ open, mode, order, onClose }: OrderFormModalPro
         } else {
             form.resetFields()
         }
-    }, [open, mode, order, form])
+    }, [open, mode, order, form, queryClient])
 
+    /**
+     * Returns the cached product detail record for a given product id.
+     * @param productId The numeric or string product id to resolve from the query cache.
+     * @returns The cached product object if it exists, otherwise `undefined`.
+     */
     const getProductById = (productId?: number | string) => {
         if (!productId) return undefined
-        return productCache[Number(productId)]
+
+        return queryClient.getQueryData<ApiResponse<Product>>(
+            PRODUCT_QUERY_KEY.detail(Number(productId)),
+        )?.data
     }
 
+    /**
+     * Finds the unit configuration for a selected product and unit id.
+     * @param productId The product id whose unit list should be searched.
+     * @param unitId The unit id to match inside the product's units array.
+     * @returns The matching unit object, or `undefined` if not found.
+     */
     const getUnitByProduct = (productId?: number | string, unitId?: number | string) =>
-        getProductById(productId)?.units.find((item) => item.unitId === Number(unitId))
+        getProductById(productId)?.units?.find((item) => item.unitId === Number(unitId))
 
     // Product search popup handlers
+    /**
+     * Opens the product search modal and remembers which form row triggered it.
+     * @param fieldName The order products array index that is currently being edited.
+     */
     const handleOpenProductSearch = (fieldName: number) => {
         setCurrentProductField(fieldName)
         setProductSearchOpen(true)
     }
 
+    /**
+     * Closes the product search modal and clears the active product field reference.
+     */
     const handleCloseProductSearch = () => {
         setProductSearchOpen(false)
         setCurrentProductField(null)
     }
 
+    /**
+     * Stores the selected product in the shared query cache and applies its details to the current order row.
+     * @param product The product object chosen from the search modal.
+     */
     const handleSelectProduct = (product: Product) => {
         if (currentProductField !== null) {
-            setProductCache((prev) => ({
-                ...prev,
-                [product.id]: product,
-            }))
+            queryClient.setQueryData<ApiResponse<Product>>(
+                PRODUCT_QUERY_KEY.detail(product.id),
+                { data: product } as ApiResponse<Product>,
+            )
             form.setFieldValue(['products', currentProductField, 'productId'], product.id)
             handleProductChange(currentProductField, product.id, product)
         }
         handleCloseProductSearch()
     }
 
+    /**
+     * Fills customer-related form fields from the selected customer record.
+     * @param customerId The id of the chosen customer.
+     */
     const handleCustomerChange = (customerId?: number) => {
         const selectedCustomer = customers.find((item) => item.id === customerId)
 
@@ -214,6 +262,10 @@ export const OrderFormModal = ({ open, mode, order, onClose }: OrderFormModalPro
         })
     }
 
+    /**
+     * Fills delivery contact fields from the selected delivery provider.
+     * @param deliveryId The id of the chosen delivery provider.
+     */
     const handleDeliveryChange = (deliveryId?: number) => {
         const selectedDelivery = deliveries.find((item) => item.id === deliveryId)
 
@@ -225,27 +277,43 @@ export const OrderFormModal = ({ open, mode, order, onClose }: OrderFormModalPro
         })
     }
 
+    /**
+     * Applies the selected product's first unit defaults into the current order line row.
+     * @param index The form products array index for the current row.
+     * @param productId The product id to resolve from cache if no product object is provided.
+     * @param productObj Optional product object that is already available from the search modal.
+     */
     const handleProductChange = (index: number, productId?: number, productObj?: Product) => {
         const product = productObj || getProductById(productId)
         const firstUnit = product?.units[0]
 
         form.setFieldValue(['products', index, 'unitId'], firstUnit?.unitId)
         form.setFieldValue(['products', index, 'warehouseId'], undefined)
+        form.setFieldValue(['products', index, 'importPrice'], firstUnit?.importPrice ?? 0)
         form.setFieldValue(['products', index, 'sellPrice'], firstUnit?.sellPrice ?? 0)
         form.setFieldValue(['products', index, 'extraPrice'], 0)
         form.setFieldValue(['products', index, 'vatPercent'], firstUnit?.vatPercent ?? 0)
     }
 
+    /**
+     * Recalculates the price and tax fields after a unit selection changes.
+     * @param index The form products array index for the current row.
+     * @param unitId The unit id selected for the current product.
+     */
     const handleUnitChange = (index: number, unitId?: number) => {
         const productId = form.getFieldValue(['products', index, 'productId'])
         const unit = getUnitByProduct(productId, unitId)
 
         form.setFieldValue(['products', index, 'warehouseId'], undefined)
+        form.setFieldValue(['products', index, 'importPrice'], unit?.importPrice ?? 0)
         form.setFieldValue(['products', index, 'sellPrice'], unit?.sellPrice ?? 0)
         form.setFieldValue(['products', index, 'extraPrice'], 0)
         form.setFieldValue(['products', index, 'vatPercent'], unit?.vatPercent ?? 0)
     }
 
+    /**
+     * Validates the form and submits either a create or update order mutation.
+     */
     const handleSubmit = async () => {
         try {
             const values = await form.validateFields()
@@ -477,7 +545,7 @@ export const OrderFormModal = ({ open, mode, order, onClose }: OrderFormModalPro
                                 <Input />
                             </Form.Item>
                         </Col>
-                        <Col xs={24} md={8}>
+                        <Col xs={12} md={6}>
                             <Form.Item
                                 label={
                                     <FormattedMessage
@@ -507,7 +575,7 @@ export const OrderFormModal = ({ open, mode, order, onClose }: OrderFormModalPro
                                 />
                             </Form.Item>
                         </Col>
-                        <Col xs={12} md={8}>
+                        <Col xs={12} md={6}>
                             <Form.Item
                                 label={
                                     <FormattedMessage
@@ -520,7 +588,7 @@ export const OrderFormModal = ({ open, mode, order, onClose }: OrderFormModalPro
                                 <Input />
                             </Form.Item>
                         </Col>
-                        <Col xs={12} md={8}>
+                        <Col xs={12} md={6}>
                             <Form.Item
                                 label={
                                     <FormattedMessage
@@ -529,6 +597,30 @@ export const OrderFormModal = ({ open, mode, order, onClose }: OrderFormModalPro
                                     />
                                 }
                                 name="deliveryPhone"
+                                rules={[
+                                    {
+                                        pattern: /^(03|05|07|08|09)\d{8}$/,
+                                        message: (
+                                            <FormattedMessage
+                                                id="message.sales.delivery-phone-invalid-vn"
+                                                defaultMessage="Delivery phone must be a valid VN number"
+                                            />
+                                        ),
+                                    },
+                                ]}
+                            >
+                                <Input />
+                            </Form.Item>
+                        </Col>
+                        <Col xs={12} md={6}>
+                            <Form.Item
+                                label={
+                                    <FormattedMessage
+                                        id="management.sales.form.label.delivery-fee"
+                                        defaultMessage="Delivery Fee"
+                                    />
+                                }
+                                name="deliveryFee"
                                 rules={[
                                     {
                                         pattern: /^(03|05|07|08|09)\d{8}$/,
