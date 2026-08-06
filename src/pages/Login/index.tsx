@@ -81,6 +81,12 @@ const Login = () => {
                     <FormattedMessage id="login.form.btn.login" />
                 </Button>
             </Form>
+
+            <div style={{ textAlign: 'center', marginTop: 16 }}>
+                <Link to="/auth/register">
+                    <FormattedMessage id="register.form.have-account" />
+                </Link>
+            </div>
         </Card >
     )
 }

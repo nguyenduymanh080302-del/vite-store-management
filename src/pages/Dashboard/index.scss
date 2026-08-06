@@ -1,0 +1,59 @@
+.dashboard-page {
+    .dashboard-hero {
+        position: relative;
+        overflow: hidden;
+        border-radius: 20px;
+        background:
+            radial-gradient(circle at top right, rgba(56, 189, 248, 0.22), transparent 30%),
+            radial-gradient(circle at bottom left, rgba(15, 118, 110, 0.16), transparent 28%),
+            linear-gradient(135deg, rgba(255, 255, 255, 0.98), rgba(240, 253, 250, 0.92));
+        box-shadow: 0 14px 32px rgba(15, 23, 42, 0.08);
+    }
+
+    .dashboard-title {
+        margin-bottom: 4px;
+    }
+
+    .dashboard-subtitle {
+        display: inline-block;
+        max-width: 720px;
+        color: var(--color-neutral-7);
+    }
+
+    .dashboard-range-text {
+        color: var(--color-neutral-7);
+    }
+
+    .dashboard-range-picker {
+        min-width: 280px;
+    }
+
+    .dashboard-stat-card {
+        min-height: 120px;
+        border-radius: 18px;
+        box-shadow: 0 10px 24px rgba(15, 23, 42, 0.06);
+    }
+
+    .dashboard-panel {
+        height: 100%;
+        border-radius: 18px;
+        box-shadow: 0 10px 24px rgba(15, 23, 42, 0.06);
+    }
+
+    .dashboard-chart {
+        width: 100%;
+        min-height: 340px;
+    }
+
+    .dashboard-top-products {
+        display: flex;
+        flex-direction: column;
+        gap: 16px;
+    }
+
+    .dashboard-products-table {
+        .ant-table-thead > tr > th {
+            background: var(--color-neutral-1);
+        }
+    }
+}

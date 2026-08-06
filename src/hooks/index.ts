@@ -1,2 +1,3 @@
 export { useLocale } from '@/hooks/useLocale';
-export { useSignin } from "@/hooks/useAuth"
+export { useSignin, useSignup } from "@/hooks/useAuth"
+export { useDashboardSummaryQuery } from '@/hooks/useDashboard'

@@ -15,6 +15,11 @@ export const authRoutes: AppRoute[] = [
         isAuth: true,
     },
     {
+        path: '/register',
+        component: lazyRouteComponent(() => import('@/pages/Register')),
+        isAuth: true,
+    },
+    {
         path: '/forgot-password',
         component: lazyRouteComponent(() => import('@/pages/ForgotPassword')),
         isAuth: true,
