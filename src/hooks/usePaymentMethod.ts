@@ -1,4 +1,4 @@
-import { useQuery } from '@tanstack/react-query'
+import { useQuery, useSuspenseQuery } from '@tanstack/react-query'
 import {
     fetchPaymentMethodById,
     fetchPaymentMethodList,
@@ -10,7 +10,7 @@ export const PAYMENT_METHOD_QUERY_KEY = {
 }
 
 export const usePaymentMethodListQuery = () =>
-    useQuery({
+    useSuspenseQuery({
         queryKey: PAYMENT_METHOD_QUERY_KEY.list,
         queryFn: fetchPaymentMethodList,
     })

@@ -1,4 +1,4 @@
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { useMutation, useQuery, useQueryClient, useSuspenseQuery } from '@tanstack/react-query'
 import { fetchUnitList, fetchUnitById, createUnit, updateUnit, deleteUnit } from '@/apis/unit.api'
 
 /* ======================
@@ -14,7 +14,7 @@ export const UNIT_QUERY_KEY = {
 ====================== */
 
 export const useUnitListQuery = () =>
-    useQuery({
+    useSuspenseQuery({
         queryKey: UNIT_QUERY_KEY.list,
         queryFn: fetchUnitList,
     })

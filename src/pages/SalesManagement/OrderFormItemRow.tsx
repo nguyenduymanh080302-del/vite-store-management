@@ -13,7 +13,6 @@ interface OrderFormItemRowProps {
     form: FormInstance
     remove: (index: number) => void
     warehouses: Warehouse[]
-    isWarehousesLoading: boolean
     locale: string
     getProductById: (productId?: number | string) => Product | undefined
     getUnitByProduct: (productId?: number | string, unitId?: number | string) => ProductUnit | undefined
@@ -42,7 +41,6 @@ export const OrderFormItemRow = ({
     form,
     remove,
     warehouses,
-    isWarehousesLoading,
     locale,
     getProductById,
     getUnitByProduct,
@@ -195,7 +193,6 @@ export const OrderFormItemRow = ({
                     >
                         <Select
                             showSearch
-                            loading={isWarehousesLoading}
                             options={warehouseOptions}
                             placeholder={t(
                                 'management.sales.form.placeholder.select-warehouse',

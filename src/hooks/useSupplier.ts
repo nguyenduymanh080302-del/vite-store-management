@@ -1,4 +1,4 @@
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { useMutation, useQuery, useQueryClient, useSuspenseQuery } from '@tanstack/react-query'
 import {
     fetchSupplierList,
     fetchSupplierById,
@@ -20,7 +20,7 @@ export const SUPPLIER_QUERY_KEY = {
 ====================== */
 
 export const useSupplierListQuery = () =>
-    useQuery({
+    useSuspenseQuery({
         queryKey: SUPPLIER_QUERY_KEY.list,
         queryFn: fetchSupplierList,
     })

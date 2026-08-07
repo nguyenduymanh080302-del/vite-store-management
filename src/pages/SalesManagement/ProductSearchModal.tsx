@@ -1,4 +1,4 @@
-import { Flex, Input, Modal, Spin, Typography } from 'antd'
+import { Flex, Input, Modal, Typography } from 'antd'
 import FormattedMessage from '@/components/FormattedMessage'
 import { useProductListQuery } from '@/hooks/useProduct'
 import { useDebounce } from '@/hooks/useDebounce'
@@ -32,7 +32,7 @@ export const ProductSearchModal = ({
         ? removeCharactersTone(debouncedProductSearch.trim())
         : undefined
 
-    const { data: productSearchData, isLoading: isProductSearchLoading } = useProductListQuery({
+    const { data: productSearchData } = useProductListQuery({
         page: 1,
         limit: 20,
         search: normalizedSearchValue,
@@ -74,11 +74,7 @@ export const ProductSearchModal = ({
                 />
 
                 <div style={{ maxHeight: 400, overflowY: 'auto' }}>
-                    {isProductSearchLoading ? (
-                        <Flex justify="center" align="center" className="p-24">
-                            <Spin />
-                        </Flex>
-                    ) : searchProducts.length === 0 ? (
+                    {searchProducts.length === 0 ? (
                         <Flex justify="center" align="center" className="p-24">
                             <Typography.Text type="secondary">
                                 {intl.formatMessage({

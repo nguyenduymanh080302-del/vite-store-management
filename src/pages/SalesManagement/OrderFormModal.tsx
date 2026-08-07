@@ -114,7 +114,7 @@ export const OrderFormModal = ({ open, mode, order, onClose }: OrderFormModalPro
     // Modal data queries (only fetch when modal is open to optimize performance)
     const { data: customerData } = useCustomerListQuery()
     const { data: deliveryData } = useDeliveryListQuery()
-    const { data: warehouseData, isLoading: isWarehousesLoading } = useWarehouseListQuery()
+    const { data: warehouseData } = useWarehouseListQuery()
 
     const { mutateAsync: createOrder, isPending: isCreating } = useCreateOrderMutation()
     const { mutateAsync: updateOrder, isPending: isUpdating } = useUpdateOrderMutation()
@@ -679,7 +679,6 @@ export const OrderFormModal = ({ open, mode, order, onClose }: OrderFormModalPro
                                         form={form}
                                         remove={remove}
                                         warehouses={warehouses}
-                                        isWarehousesLoading={isWarehousesLoading}
                                         locale={locale}
                                         getProductById={getProductById}
                                         getUnitByProduct={getUnitByProduct}

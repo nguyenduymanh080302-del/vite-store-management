@@ -1,6 +1,6 @@
 import { type ReactNode } from 'react'
 import { Navigate } from '@tanstack/react-router'
-import { Spin } from 'antd'
+import { Skeleton } from 'antd'
 import { useAuthStore } from '@/stores/auth.store'
 import { PERMISSION } from '@/utils/enum'
 
@@ -13,7 +13,7 @@ export function PermissionGuard({ permission, children }: Props) {
     const { account, isAuthInitialized } = useAuthStore()
 
     if (!isAuthInitialized) {
-        return <Spin size='large' fullscreen />
+        return <Skeleton active className="p-24" />
     }
 
     if (!account) {

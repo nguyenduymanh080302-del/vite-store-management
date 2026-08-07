@@ -1,4 +1,4 @@
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { useMutation, useQuery, useQueryClient, useSuspenseQuery } from '@tanstack/react-query'
 import {
     createOrder,
     deleteOrder,
@@ -14,7 +14,7 @@ export const ORDER_QUERY_KEY = {
 }
 
 export const useOrderListQuery = (query?: GetOrdersQuery) =>
-    useQuery({
+    useSuspenseQuery({
         queryKey: ORDER_QUERY_KEY.list(query),
         queryFn: () => fetchOrderList(query),
     })

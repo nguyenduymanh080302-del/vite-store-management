@@ -1,4 +1,4 @@
-import { useQuery } from '@tanstack/react-query'
+import { useSuspenseQuery } from '@tanstack/react-query'
 import dayjs, { Dayjs } from 'dayjs'
 import { fetchDashboardOrders } from '@/apis/order.api'
 
@@ -138,7 +138,7 @@ export const useDashboardSummaryQuery = (range: DashboardRange) => {
     const from = range.from.startOf('day')
     const to = range.to.endOf('day')
 
-    return useQuery({
+    return useSuspenseQuery({
         queryKey: DASHBOARD_QUERY_KEY.summary(from.format('YYYY-MM-DD'), to.format('YYYY-MM-DD')),
         queryFn: async () => {
             const orders = await fetchDashboardOrders({

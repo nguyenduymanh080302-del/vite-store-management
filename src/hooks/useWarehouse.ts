@@ -1,4 +1,4 @@
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { useMutation, useQuery, useQueryClient, useSuspenseQuery } from '@tanstack/react-query'
 import {
     createWarehouse,
     deleteWarehouse,
@@ -13,7 +13,7 @@ export const WAREHOUSE_QUERY_KEY = {
 }
 
 export const useWarehouseListQuery = () =>
-    useQuery({
+    useSuspenseQuery({
         queryKey: WAREHOUSE_QUERY_KEY.list,
         queryFn: fetchWarehouseList,
     })

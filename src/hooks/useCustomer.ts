@@ -1,4 +1,4 @@
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { useMutation, useQuery, useQueryClient, useSuspenseQuery } from '@tanstack/react-query'
 import {
     fetchCustomerList,
     fetchCustomerById,
@@ -21,7 +21,7 @@ export const CUSTOMER_QUERY_KEY = {
 ====================== */
 
 export const useCustomerListQuery = () =>
-    useQuery({
+    useSuspenseQuery({
         queryKey: CUSTOMER_QUERY_KEY.list,
         queryFn: fetchCustomerList,
     })

@@ -1,4 +1,4 @@
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient, useSuspenseQuery } from "@tanstack/react-query";
 import {
     fetchCategoryList,
     fetchCategoryById,
@@ -20,7 +20,7 @@ export const CATEGORY_QUERY_KEY = {
 ====================== */
 
 export const useCategoryListQuery = () =>
-    useQuery({
+    useSuspenseQuery({
         queryKey: CATEGORY_QUERY_KEY.list,
         queryFn: fetchCategoryList,
     });

@@ -1,4 +1,4 @@
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { useMutation, useQuery, useQueryClient, useSuspenseQuery } from '@tanstack/react-query'
 import {
     fetchProductList,
     fetchProductById,
@@ -69,7 +69,7 @@ export const PRODUCT_QUERY_KEY = {
 ====================== */
 
 export const useProductListQuery = (params?: GetProductsQuery) =>
-    useQuery({
+    useSuspenseQuery({
         queryKey: PRODUCT_QUERY_KEY.list(params),
         queryFn: () => fetchProductList(params),
     })
