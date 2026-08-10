@@ -61,4 +61,4 @@ type SvgProps = {
 
 type Language = "vi" | "en" | "zh-cn" | "ja";
 
-type ModalActionMode = "create" | "edit" | "delete";
+type ModalActionMode = "create" | "edit" | "delete" | null;

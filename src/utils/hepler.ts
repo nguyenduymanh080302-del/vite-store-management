@@ -90,5 +90,8 @@ export const normalizeSlug = (value?: string) => {
         .replace(/^-+|-+$/g, '');    // trim dashes
 };
 
-
+export const formatAmount = (value: number, locale?: string) =>
+    new Intl.NumberFormat(locale === 'vi' ? 'vi-VN' : 'en-US', {
+        maximumFractionDigits: 2,
+    }).format(value || 0)
 

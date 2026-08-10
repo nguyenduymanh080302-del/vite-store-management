@@ -3,15 +3,12 @@ import {
     createRoute,
     createRouter
 } from '@tanstack/react-router'
-import { Suspense } from 'react'
 
 import AuthLayout from '@/layouts/AuthLayout'
 import ManagementLayout from '@/layouts/ManagementLayout'
 import { PermissionGuard } from '@/router/PermissionGuard'
 import { authRoutes, managementRoutes } from '@/router/routeConfig'
-import { Skeleton } from 'antd'
-
-const RouteFallback = () => <Skeleton active className="p-24" />
+import { Skeleton, Spin } from 'antd'
 
 const rootRoute = createRootRoute()
 
@@ -39,7 +36,7 @@ const managementLayoutRoute = createRoute({
             <ManagementLayout />
         </PermissionGuard>
     ),
-    pendingComponent: RouteFallback,
+    pendingComponent: () => <Spin fullscreen size="large" />,
 })
 
 const managementChildRoutes = managementRoutes.map((r) =>
@@ -48,12 +45,10 @@ const managementChildRoutes = managementRoutes.map((r) =>
         path: r.path,
         component: () => (
             <PermissionGuard permission={r.permission}>
-                <Suspense fallback={<RouteFallback />}>
-                    <r.component />
-                </Suspense>
+                <r.component />
             </PermissionGuard>
         ),
-        pendingComponent: RouteFallback,
+        pendingComponent: () => <Skeleton active className="p-24" />,
     })
 )
 

@@ -1,0 +1,98 @@
+import { IconTrash } from '@/assets/icons'
+import { useDeliveryListQuery } from '@/hooks/useDelivery'
+import { useAppStore } from '@/stores/app.store'
+import { DATE_FORMAT_BY_LOCALE } from '@/utils/constant'
+import { Button } from 'antd'
+import Table, { ColumnType } from 'antd/es/table'
+import dayjs from 'dayjs'
+import { FormattedMessage } from 'react-intl'
+
+interface Props {
+    handleChangeMode: (mode: ModalActionMode, record: Delivery) => void
+}
+
+const DeliveryTable = ({ handleChangeMode }: Props) => {
+
+    const { data } = useDeliveryListQuery()
+    const deliveryList = data?.data || []
+    const locale = useAppStore(state => state.locale)
+
+    const columns: ColumnType<Delivery>[] = [
+        {
+            title: <FormattedMessage id="table.column.id" />,
+            dataIndex: 'id',
+            key: 'id',
+        },
+        {
+            title: <FormattedMessage id="table.column.delivery" />,
+            dataIndex: 'name',
+            key: 'name',
+            render: (_, record) => (
+                <Button
+                    type="link"
+                    className="px-0"
+                    onClick={() => handleChangeMode('edit', record)}
+                >
+                    {record.name}
+                </Button>
+            ),
+            sorter: (a, b) => a.name.localeCompare(b.name),
+        },
+        {
+            title: <FormattedMessage id="table.column.email" />,
+            dataIndex: 'email',
+            key: 'email',
+        },
+        {
+            title: <FormattedMessage id="table.column.phone" />,
+            dataIndex: 'phone',
+            key: 'phone',
+        },
+        {
+            title: <FormattedMessage id="table.column.created-at" />,
+            dataIndex: 'createdAt',
+            key: 'createdAt',
+            render: value =>
+                value
+                    ? dayjs(value).locale(locale).format(DATE_FORMAT_BY_LOCALE[locale])
+                    : '--/--/----',
+            sorter: (a, b) => dayjs(a.createdAt).valueOf() - dayjs(b.createdAt).valueOf(),
+        },
+        {
+            title: <FormattedMessage id="table.column.updated-at" />,
+            dataIndex: 'updatedAt',
+            key: 'updatedAt',
+            render: value =>
+                value
+                    ? dayjs(value).locale(locale).format(DATE_FORMAT_BY_LOCALE[locale])
+                    : '--/--/----',
+            sorter: (a, b) => dayjs(a.updatedAt).valueOf() - dayjs(b.updatedAt).valueOf(),
+        },
+        {
+            title: '',
+            key: 'action',
+            render: (_, record) => (
+                <Button
+                    type="primary"
+                    className="bg-red-3"
+                    onClick={() => handleChangeMode('delete', record)}
+                >
+                    <IconTrash height={18} width={18} />
+                </Button>
+            ),
+        },
+    ]
+
+    return (
+        <Table<Delivery>
+            rowKey="id"
+            columns={columns}
+            dataSource={deliveryList}
+            pagination={{ pageSize: 10, hideOnSinglePage: true }}
+            className="flex-1"
+            showSorterTooltip={false}
+        />
+    )
+}
+
+export default DeliveryTable
