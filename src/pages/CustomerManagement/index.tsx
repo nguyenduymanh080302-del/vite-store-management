@@ -56,10 +56,10 @@ const CustomerManagement = () => {
             <CustomerTable handleChangeMode={handleChangeMode} />
 
             <CustomerModal
-                open={open}
                 mode={mode}
                 selectedCustomer={selectedCustomer}
-                handleClose={handleClose}
+                handleChangeMode={handleChangeMode}
+                form={form}
             />
         </Flex>
     )

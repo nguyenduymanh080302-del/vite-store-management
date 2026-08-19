@@ -1,4 +1,4 @@
-import { useMutation, useQuery, useQueryClient, useSuspenseQuery } from '@tanstack/react-query'
+import { keepPreviousData, useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import {
     createOrder,
     deleteOrder,
@@ -14,9 +14,10 @@ export const ORDER_QUERY_KEY = {
 }
 
 export const useOrderListQuery = (query?: GetOrdersQuery) =>
-    useSuspenseQuery({
+    useQuery({
         queryKey: ORDER_QUERY_KEY.list(query),
         queryFn: () => fetchOrderList(query),
+        placeholderData: keepPreviousData,
     })
 
 export const useOrderByIdQuery = (id?: number) =>

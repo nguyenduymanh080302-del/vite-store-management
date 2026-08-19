@@ -3,10 +3,10 @@ import FormattedMessage from '@/components/FormattedMessage'
 import { Button, Flex, Typography } from 'antd'
 
 interface Props {
-    handleChangeMode: (mode: ModalActionMode, delivery?: Delivery) => void
+    handleChangeMode: (mode: ModalActionMode, supplier?: Supplier) => void
 }
 
-const DeliveryHeader = ({ handleChangeMode }: Props) => {
+const SupplierHeader = ({ handleChangeMode }: Props) => {
     return (
         <Flex justify="space-between">
             <Typography.Title level={5} className="m-0" />
@@ -17,10 +17,10 @@ const DeliveryHeader = ({ handleChangeMode }: Props) => {
                 onClick={() => handleChangeMode('create')}
             >
                 <IconPlus width={16} color="var(--color-neutral-0)" />
-                <FormattedMessage id="management.delivery.btn.create-delivery" />
+                <FormattedMessage id="management.supplier.btn.create-supplier" />
             </Button>
         </Flex>
     )
 }
 
-export default DeliveryHeader
+export default SupplierHeader

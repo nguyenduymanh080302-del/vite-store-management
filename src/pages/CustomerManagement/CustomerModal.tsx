@@ -1,4 +1,5 @@
 import { Flex, Form, Input, InputNumber, Modal, Typography } from 'antd'
+import type { FormInstance } from 'antd'
 import { useIntl } from 'react-intl'
 
 import FormattedMessage from '@/components/FormattedMessage'
@@ -9,11 +10,11 @@ interface Props {
     mode: ModalActionMode
     handleChangeMode: (mode: ModalActionMode) => void
     selectedCustomer: Customer | null
+    form: FormInstance
 }
 
-const CustomerModal = ({ mode, handleChangeMode, selectedCustomer }: Props) => {
+const CustomerModal = ({ mode, handleChangeMode, selectedCustomer, form }: Props) => {
     const intl = useIntl()
-    const [form] = Form.useForm()
     const { mutateAsync: createCustomer, isPending: isCreating } = useCreateCustomerMutation();
     const { mutateAsync: updateCustomer, isPending: isUpdating } = useUpdateCustomerMutation();
     const { mutateAsync: deleteCustomer, isPending: isDeleting } = useDeleteCustomerMutation();

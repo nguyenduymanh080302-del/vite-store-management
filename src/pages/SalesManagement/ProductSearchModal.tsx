@@ -1,10 +1,10 @@
-import { Flex, Input, Modal, Typography } from 'antd'
 import FormattedMessage from '@/components/FormattedMessage'
-import { useProductListQuery } from '@/hooks/useProduct'
 import { useDebounce } from '@/hooks/useDebounce'
-import { useState, useEffect } from 'react'
-import { useIntl } from 'react-intl'
+import { useProductListQuery } from '@/hooks/useProduct'
 import { removeCharactersTone } from '@/utils/hepler'
+import { Flex, Input, Modal, Spin, Typography } from 'antd'
+import { useState } from 'react'
+import { useIntl } from 'react-intl'
 
 interface ProductSearchModalProps {
     open: boolean
@@ -32,19 +32,12 @@ export const ProductSearchModal = ({
         ? removeCharactersTone(debouncedProductSearch.trim())
         : undefined
 
-    const { data: productSearchData } = useProductListQuery({
+    const { data: productSearchData, isLoading: isProductSearchLoading } = useProductListQuery({
         page: 1,
         limit: 20,
         search: normalizedSearchValue,
         isActive: true,
     })
-
-    // Reset local search value when modal is opened/closed
-    useEffect(() => {
-        if (open) {
-            setProductSearchValue(initialSearchValue)
-        }
-    }, [open, initialSearchValue])
 
     const searchProducts = (productSearchData?.data?.items || []).filter((item) => item.isActive)
 
@@ -74,7 +67,11 @@ export const ProductSearchModal = ({
                 />
 
                 <div style={{ maxHeight: 400, overflowY: 'auto' }}>
-                    {searchProducts.length === 0 ? (
+                    {isProductSearchLoading ? (
+                        <Flex justify="center" align="center" className="p-24">
+                            <Spin />
+                        </Flex>
+                    ) : searchProducts.length === 0 ? (
                         <Flex justify="center" align="center" className="p-24">
                             <Typography.Text type="secondary">
                                 {intl.formatMessage({

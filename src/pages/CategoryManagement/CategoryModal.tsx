@@ -1,17 +1,18 @@
 import { useCreateCategoryMutation, useDeleteCategoryMutation, useUpdateCategoryMutation } from '@/hooks/useCategory'
 import { generatePathFromName, normalizeSlug, normalizeSpace } from '@/utils/hepler'
 import { Button, Flex, Form, Input, Modal, Typography } from 'antd'
+import type { FormInstance } from 'antd'
 import { FormattedMessage, useIntl } from 'react-intl'
 
 interface Props {
     mode: ModalActionMode
     handleChangeMode: (mode: ModalActionMode) => void
     selectedCategory: Category | null
+    form: FormInstance
 }
 
-const CategoryModal = ({ mode, handleChangeMode, selectedCategory }: Props) => {
+const CategoryModal = ({ mode, handleChangeMode, selectedCategory, form }: Props) => {
     const intl = useIntl()
-    const [form] = Form.useForm()
 
     const { mutateAsync: createCategory, isPending: isCreating } = useCreateCategoryMutation();
     const { mutateAsync: updateCategory, isPending: isUpdating } = useUpdateCategoryMutation();
@@ -61,7 +62,7 @@ const CategoryModal = ({ mode, handleChangeMode, selectedCategory }: Props) => {
             cancelText={<FormattedMessage id="management.category.modal.btn.cancel" />}
         >
             {mode === "delete" ? (
-                <Flex orientation="vertical" justify="center" align="center" className='p-24 border-red-4 border-2 rounded-12'>
+                <Flex vertical justify="center" align="center" className='p-24 border-red-4 border-2 rounded-12'>
                     <FormattedMessage id="management.category.modal.confirm-delete" />
                     <Typography.Text strong className="text-red-6 mx-4">{selectedCategory?.name}</Typography.Text>
                 </Flex>

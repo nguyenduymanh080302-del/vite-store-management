@@ -1,6 +1,6 @@
 import { IconTrash } from '@/assets/icons'
 import FormattedMessage from '@/components/FormattedMessage'
-import { useDeliveryListQuery } from '@/hooks/useDelivery'
+import { useUnitListQuery } from '@/hooks/useUnit'
 import { useAppStore } from '@/stores/app.store'
 import { DATE_FORMAT_BY_LOCALE } from '@/utils/constant'
 import { Button, Table } from 'antd'
@@ -8,22 +8,22 @@ import type { ColumnType } from 'antd/es/table'
 import dayjs from 'dayjs'
 
 interface Props {
-    handleChangeMode: (mode: ModalActionMode, delivery?: Delivery) => void
+    handleChangeMode: (mode: ModalActionMode, unit?: Unit) => void
 }
 
-const DeliveryTable = ({ handleChangeMode }: Props) => {
+const UnitTable = ({ handleChangeMode }: Props) => {
     const locale = useAppStore((state) => state.locale)
-    const { data } = useDeliveryListQuery()
-    const deliveryList = data?.data || []
+    const { data } = useUnitListQuery()
+    const unitList = data?.data || []
 
-    const columns: ColumnType<Delivery>[] = [
+    const columns: ColumnType<Unit>[] = [
         {
             title: <FormattedMessage id="table.column.id" />,
             dataIndex: 'id',
             key: 'id',
         },
         {
-            title: <FormattedMessage id="table.column.delivery" />,
+            title: <FormattedMessage id="table.column.unit" />,
             dataIndex: 'name',
             key: 'name',
             render: (_, record) => (
@@ -32,16 +32,6 @@ const DeliveryTable = ({ handleChangeMode }: Props) => {
                 </Button>
             ),
             sorter: (a, b) => a.name.localeCompare(b.name),
-        },
-        {
-            title: <FormattedMessage id="table.column.email" />,
-            dataIndex: 'email',
-            key: 'email',
-        },
-        {
-            title: <FormattedMessage id="table.column.phone" />,
-            dataIndex: 'phone',
-            key: 'phone',
         },
         {
             title: <FormattedMessage id="table.column.created-at" />,
@@ -75,10 +65,10 @@ const DeliveryTable = ({ handleChangeMode }: Props) => {
     ]
 
     return (
-        <Table<Delivery>
+        <Table<Unit>
             rowKey="id"
             columns={columns}
-            dataSource={deliveryList}
+            dataSource={unitList}
             pagination={{ pageSize: 10, hideOnSinglePage: true }}
             className="flex-1"
             showSorterTooltip={false}
@@ -86,4 +76,4 @@ const DeliveryTable = ({ handleChangeMode }: Props) => {
     )
 }
 
-export default DeliveryTable
+export default UnitTable

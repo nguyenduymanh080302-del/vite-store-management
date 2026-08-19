@@ -2,7 +2,7 @@ import { Flex, Form } from 'antd';
 import { useState } from 'react';
 import CategoryModal from './CategoryModal';
 import CategoryTable from './CategoryTable';
-import CategoryHeader from './CatetegoryHeader';
+import CategoryHeader from './CategoryHeader';
 
 const CategoryManagement = () => {
 
@@ -13,7 +13,6 @@ const CategoryManagement = () => {
     const handleChangeMode = (mode: ModalActionMode, category?: Category) => {
         setMode(mode);
         switch (mode) {
-
             case "edit":
                 if (category) {
                     form.setFieldsValue({
@@ -32,6 +31,7 @@ const CategoryManagement = () => {
             case null:
                 form.resetFields();
                 setSelectedCategory(null);
+                break;
         }
     }
 
@@ -39,7 +39,12 @@ const CategoryManagement = () => {
         <Flex vertical gap={12}>
             <CategoryHeader handleChangeMode={handleChangeMode} />
             <CategoryTable handleChangeMode={handleChangeMode} />
-            <CategoryModal mode={mode} selectedCategory={selectedCategory} handleChangeMode={handleChangeMode} />
+            <CategoryModal
+                form={form}
+                mode={mode}
+                selectedCategory={selectedCategory}
+                handleChangeMode={handleChangeMode}
+            />
         </Flex>
 
     )

@@ -1,29 +1,29 @@
 import { IconTrash } from '@/assets/icons'
 import FormattedMessage from '@/components/FormattedMessage'
-import { useDeliveryListQuery } from '@/hooks/useDelivery'
+import { useWarehouseListQuery } from '@/hooks/useWarehouse'
 import { useAppStore } from '@/stores/app.store'
 import { DATE_FORMAT_BY_LOCALE } from '@/utils/constant'
-import { Button, Table } from 'antd'
+import { Button, Switch, Table } from 'antd'
 import type { ColumnType } from 'antd/es/table'
 import dayjs from 'dayjs'
 
 interface Props {
-    handleChangeMode: (mode: ModalActionMode, delivery?: Delivery) => void
+    handleChangeMode: (mode: ModalActionMode, warehouse?: Warehouse) => void
 }
 
-const DeliveryTable = ({ handleChangeMode }: Props) => {
+const WarehouseTable = ({ handleChangeMode }: Props) => {
     const locale = useAppStore((state) => state.locale)
-    const { data } = useDeliveryListQuery()
-    const deliveryList = data?.data || []
+    const { data } = useWarehouseListQuery()
+    const warehouseList = data?.data || []
 
-    const columns: ColumnType<Delivery>[] = [
+    const columns: ColumnType<Warehouse>[] = [
         {
             title: <FormattedMessage id="table.column.id" />,
             dataIndex: 'id',
             key: 'id',
         },
         {
-            title: <FormattedMessage id="table.column.delivery" />,
+            title: <FormattedMessage id="management.warehouse.modal.label.warehouse-name" />,
             dataIndex: 'name',
             key: 'name',
             render: (_, record) => (
@@ -34,14 +34,16 @@ const DeliveryTable = ({ handleChangeMode }: Props) => {
             sorter: (a, b) => a.name.localeCompare(b.name),
         },
         {
-            title: <FormattedMessage id="table.column.email" />,
-            dataIndex: 'email',
-            key: 'email',
+            title: <FormattedMessage id="management.warehouse.modal.label.warehouse-address" />,
+            dataIndex: 'address',
+            key: 'address',
+            render: (value) => value || '--',
         },
         {
-            title: <FormattedMessage id="table.column.phone" />,
-            dataIndex: 'phone',
-            key: 'phone',
+            title: <FormattedMessage id="management.warehouse.modal.label.warehouse-active" />,
+            dataIndex: 'isActive',
+            key: 'isActive',
+            render: (value) => <Switch checked={!!value} disabled />,
         },
         {
             title: <FormattedMessage id="table.column.created-at" />,
@@ -75,10 +77,10 @@ const DeliveryTable = ({ handleChangeMode }: Props) => {
     ]
 
     return (
-        <Table<Delivery>
+        <Table<Warehouse>
             rowKey="id"
             columns={columns}
-            dataSource={deliveryList}
+            dataSource={warehouseList}
             pagination={{ pageSize: 10, hideOnSinglePage: true }}
             className="flex-1"
             showSorterTooltip={false}
@@ -86,4 +88,4 @@ const DeliveryTable = ({ handleChangeMode }: Props) => {
     )
 }
 
-export default DeliveryTable
+export default WarehouseTable
